@@ -1,7 +1,34 @@
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleCredentialResponse, useGoogleLogin } from "@react-oauth/google";
 import viteLogo from "/vite.svg";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 function App() {
+  const [user, setUser] = useState<GoogleCredentialResponse | null>();
+  const [profile, setProfile] = useState<any>();
+
+  const handleLogin = useGoogleLogin({
+    onSuccess: (credentialResponse) =>
+      setUser(credentialResponse as GoogleCredentialResponse),
+  });
+
+  useEffect(() => {
+    if (user) {
+      axios
+        .get(
+          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user?.access_token}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user?.access_token}`,
+              Accept: "application/json",
+            },
+          }
+        )
+        .then((response) => setProfile(response?.data))
+        .catch((err) => console.log(err));
+    }
+  }, [user]);
+
   return (
     <>
       <div>
@@ -13,10 +40,18 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
-      <GoogleLogin
-        onSuccess={(credential) => console.log(credential)}
-        onError={() => console.log("Sign in failed!")}
-      />
+      {profile ? (
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <p>
+            Signed in with:{" "}
+            <span style={{ color: "blue", fontStyle: "italic" }}>
+              {profile?.name}
+            </span>
+          </p>
+        </div>
+      ) : (
+        <button onClick={() => handleLogin()}>Sign in with Google</button>
+      )}
     </>
   );
 }
