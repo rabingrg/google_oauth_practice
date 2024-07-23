@@ -1,4 +1,8 @@
-import { GoogleCredentialResponse, useGoogleLogin } from "@react-oauth/google";
+import {
+  GoogleCredentialResponse,
+  useGoogleLogin,
+  googleLogout,
+} from "@react-oauth/google";
 import viteLogo from "/vite.svg";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -11,6 +15,12 @@ function App() {
     onSuccess: (credentialResponse) =>
       setUser(credentialResponse as GoogleCredentialResponse),
   });
+
+  const handleLogout = () => {
+    googleLogout();
+    setUser(null);
+    setProfile(null);
+  };
 
   useEffect(() => {
     if (user) {
@@ -48,6 +58,9 @@ function App() {
               {profile?.name}
             </span>
           </p>
+          <button style={{ width: "70px" }} onClick={() => handleLogout()}>
+            Log out
+          </button>
         </div>
       ) : (
         <button onClick={() => handleLogin()}>Sign in with Google</button>
